@@ -6,7 +6,7 @@ I've followed the links he described in [his implementation](https://github.com/
 
 ### Sources
 
-["Rooms and Mazes: A Procedural Dungeon Generator"](http://journal.stuffwithstuff.com/2014/12/21/rooms-and-mazes/)
+[Rooms and Mazes: A Procedural Dungeon Generator by Bob Nystrom](http://journal.stuffwithstuff.com/2014/12/21/rooms-and-mazes/)
 
 [Maze Classification by Walter D. Pullen](http://www.astrolog.org/labyrnth/algrithm.htm)
 
@@ -17,5 +17,4 @@ I've followed the links he described in [his implementation](https://github.com/
 
 ### Usage
 
-`clj -m maze`
-
+`clj -m maze <rows> <columns>`
