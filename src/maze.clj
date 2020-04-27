@@ -64,15 +64,6 @@
            (filter #(unvisited? cells (val %)))
            seq))
 
-(defn find-unvisited-neighbors
-  [cells]
-  (some->> cells
-           (filter #(not-empty (val %)))
-           keys
-           (mapcat (partial valid-directions cells))
-           (filter #(unvisited? cells (val %)))
-           seq))
-
 (defn get-visited-cells [cells] (filter #(not-empty (val %)) cells))
 
 (defn has-unvisited-neighbor? [cells position] (some? (maybe-get-unvisited-neighbors cells position)))
