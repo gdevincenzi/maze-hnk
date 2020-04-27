@@ -115,4 +115,4 @@
          (cells->maze rows cols))))
 
 (defn -main []
-  (println (generate-maze 5 5)))
+  (println (time (generate-maze 5 5))))
