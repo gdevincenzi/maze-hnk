@@ -126,5 +126,10 @@
     (->> (walk initial-position cells)
          (cells->maze rows cols))))
 
-(defn -main []
-  (println (time (generate-maze 5 5))))
+(defn -main
+  [rows cols]
+  (->> [rows cols]
+       (map clojure.edn/read-string)
+       (apply generate-maze)
+       time
+       println))
