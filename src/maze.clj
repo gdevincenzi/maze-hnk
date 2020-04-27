@@ -1,5 +1,9 @@
 (ns maze)
 
+
+;; Directions
+;;
+
 (defn inverse-direction [direction] (get {:N :S :E :W :S :N :W :E} direction))
 
 (defn directions
@@ -8,6 +12,45 @@
    :E [row (inc col)]
    :S [(inc row) col]
    :W [row (dec col)]})
+
+
+;; Maze display
+;;
+
+(defn cell-pos->maze-pos [[x y]] [(inc (* 2 x)) (inc (* 2 y))])
+
+(defn cell->floor-tiles
+  [[cell-pos connections]]
+  (let [center (cell-pos->maze-pos cell-pos)]
+    (-> (partial get (directions center))
+        (map connections)
+        (conj center))))
+
+(defn generate-floor-tiles
+  [maze-cells]
+  (->> maze-cells
+       (filter #(not-empty (val %)))
+       (mapcat cell->floor-tiles)
+       (into #{})))
+
+(defn wall-or-floor [floor-tiles coord] (if (contains? floor-tiles coord) ". " "# "))
+
+(defn generate-maze-coords
+  [rows cols] (for [x (range (inc (* 2 rows))) y (range (inc (* 2 cols)))] [x y]))
+
+(defn cells->maze
+  [rows cols cells]
+  (let [floor-tiles (generate-floor-tiles cells)]
+    (->> (generate-maze-coords rows cols)
+         (map (partial wall-or-floor floor-tiles))
+         (partition (inc (* 2 cols)))
+         (map #(apply str %))
+         ((partial interpose "\n"))
+         (apply str))))
+
+
+;; Maze generation
+;;
 
 (defn valid-cell? [cells position] (some? (get cells position)))
 
@@ -58,41 +101,6 @@
     (if-let [next-position (hunt cells)]
       (recur next-position cells)
       cells)))
-
-
-;; Maze display code
-;;
-
-(defn cell-pos->maze-pos [[x y]] [(inc (* 2 x)) (inc (* 2 y))])
-
-(defn cell->floor-tiles
-  [[cell-pos connections]]
-  (let [center (cell-pos->maze-pos cell-pos)]
-    (-> (partial get (directions center))
-        (map connections)
-        (conj center))))
-
-(defn generate-floor-tiles
-  [maze-cells]
-  (->> maze-cells
-       (filter #(not-empty (val %)))
-       (mapcat cell->floor-tiles)
-       (into #{})))
-
-(defn wall-or-floor [floor-tiles coord] (if (contains? floor-tiles coord) ". " "# "))
-
-(defn generate-maze-coords
-  [rows cols] (for [x (range (inc (* 2 rows))) y (range (inc (* 2 cols)))] [x y]))
-
-(defn cells->maze
-  [rows cols cells]
-  (let [floor-tiles (generate-floor-tiles cells)]
-    (->> (generate-maze-coords rows cols)
-         (map (partial wall-or-floor floor-tiles))
-         (partition (inc (* 2 cols)))
-         (map #(apply str %))
-         ((partial interpose "\n"))
-         (apply str))))
 
 (defn generate-cells
   [rows cols]
