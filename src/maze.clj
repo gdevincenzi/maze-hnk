@@ -36,7 +36,9 @@
 (defn wall-or-floor [floor-tiles coord] (if (contains? floor-tiles coord) "\033[1;34m. " "\033[1;32m# "))
 
 (defn generate-maze-coords
-  [rows cols] (for [x (range (inc (* 2 rows))) y (range (inc (* 2 cols)))] [x y]))
+  [rows cols]
+  (for [x (range (inc (* 2 rows))) y (range (inc (* 2 cols)))]
+    [x y]))
 
 (defn cells->maze
   [rows cols cells]
