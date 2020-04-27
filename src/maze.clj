@@ -15,27 +15,53 @@
 
 (defn unvisited? [cells position] (empty? (get cells position)))
 
-(def visited? (complement unvisited?))
-
-(defn get-unvisited-neighbors
+(defn maybe-get-unvisited-neighbors
   [cells position]
   (some->> (valid-directions cells position)
            (filter #(unvisited? cells (val %)))
            seq))
 
-(defn get-next-direction [cells position] (rand-nth (get-unvisited-neighbors cells position)))
+(defn find-unvisited-neighbors
+  [cells]
+  (some->> cells
+           (filter #(not-empty (val %)))
+           keys
+           (mapcat (partial valid-directions cells))
+           (filter #(unvisited? cells (val %)))
+           seq))
+
+(defn get-visited-cells [cells] (filter #(not-empty (val %)) cells))
+
+(defn has-unvisited-neighbor? [cells position] (some? (maybe-get-unvisited-neighbors cells position)))
+
+(defn maybe-get-next-direction [cells position] (rand-nth (maybe-get-unvisited-neighbors cells position)))
 
 (defn carve-path [position [direction next-position] cells]
   (-> cells
       (update position #(conj % direction))
       (update next-position #(conj % (inverse-direction direction)))))
 
+(defn hunt
+  [cells]
+  (some->> (get-visited-cells cells)
+           keys
+           (filter (partial has-unvisited-neighbor? cells))
+           seq
+           rand-nth))
+
 (defn walk
   [position cells]
-  (if-let [next-direction (get-next-direction cells position)]
-    (let [cells' (carve-path position next-direction cells)]
-      (recur (second next-direction) cells'))
-    cells))
+  (if-let [next-direction (maybe-get-next-direction cells position)]
+    (->> cells
+         (carve-path position next-direction)
+         (recur (second next-direction)))
+    (if-let [next-position (hunt cells)]
+      (recur next-position cells)
+      cells)))
+
+
+;; Maze display code
+;;
 
 (defn cell-pos->maze-pos [[x y]] [(inc (* 2 x)) (inc (* 2 y))])
 
@@ -55,7 +81,8 @@
 
 (defn wall-or-floor [floor-tiles coord] (if (contains? floor-tiles coord) ". " "# "))
 
-(defn generate-maze-coords [rows cols] (for [x (range (inc (* 2 rows))) y (range (inc (* 2 cols)))] [x y]))
+(defn generate-maze-coords
+  [rows cols] (for [x (range (inc (* 2 rows))) y (range (inc (* 2 cols)))] [x y]))
 
 (defn cells->maze
   [rows cols cells]
@@ -67,7 +94,10 @@
          ((partial interpose "\n"))
          (apply str))))
 
-(defn generate-cells [rows cols] (->> (for [x (range rows) y (range cols)] (hash-map [x y] #{})) (apply merge)))
+(defn generate-cells
+  [rows cols]
+  (->> (for [x (range rows) y (range cols)] (hash-map [x y] #{}))
+       (apply merge)))
 
 (defn generate-maze
   [rows cols]
